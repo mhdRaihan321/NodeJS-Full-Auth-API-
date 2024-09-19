@@ -1,3 +1,4 @@
 # .gitignore
 .env
 commeted
+node_modules
