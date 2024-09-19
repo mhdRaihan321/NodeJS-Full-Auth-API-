@@ -1,6 +1,6 @@
 # Node.js dependencies (node_modules should not be uploaded)
 node_modules/
-commeted
+
 # Environment variables (keep your .env file secure)
 .env
 
