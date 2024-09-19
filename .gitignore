@@ -1,15 +1,12 @@
-
-# Node.js
-node_modules
-routes
+# Node.js dependencies (node_modules should not be uploaded)
+node_modules/
 commeted
-
-# Environment variables
+# Environment variables (keep your .env file secure)
 .env
 
-# Logs
-logs
+# Log files
+logs/
 *.log
 
 # Optional npm cache directory
-.npm
+.npm/
