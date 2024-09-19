@@ -1,4 +1,14 @@
-# .gitignore
-.env
-commeted
+
+# Node.js
 node_modules
+commeted
+
+# Environment variables
+.env
+
+# Logs
+logs
+*.log
+
+# Optional npm cache directory
+.npm
