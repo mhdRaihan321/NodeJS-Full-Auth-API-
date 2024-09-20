@@ -471,10 +471,10 @@ router.put('/reset-password',async (req,res)=>{
         }
          // Ensure new password is not the same as the current one
 
-        const isMatch = await user.matchPassword(newPassword);
-        if(!isMatch){
-            return res.status(400).json({msg:"New password cannot be the same as the current password."})
-        }
+        // const isMatch = await user.matchPassword(newPassword);
+        // if(!isMatch){
+        //     return res.status(400).json({msg:"New password cannot be the same as the current password."})
+        // }
         
         // Update Password 
         user.password = newPassword
