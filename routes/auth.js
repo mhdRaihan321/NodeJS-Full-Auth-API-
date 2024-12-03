@@ -305,10 +305,11 @@ router.put('/change-password', auth, async (req, res) => {
 });
 
 // Resend OTP Route
+
 router.post('/resend-otp', otpResendRateLimiter, auth, async (req, res) => {
     try {
         const user = await User.findById(req.user.id);
-        if (!user) return res.status(404).json({ msg: 'User not found' });
+        if (!user.otp || Date.now() > user.otpExpires) return res.status(404).json({ msg: 'User not found' });
 
         // Generate a new OTP and save it temporarily
         const newOtp = generateOTP();
@@ -471,10 +472,10 @@ router.put('/reset-password',async (req,res)=>{
         }
          // Ensure new password is not the same as the current one
 
-        // const isMatch = await user.matchPassword(newPassword);
-        // if(!isMatch){
-        //     return res.status(400).json({msg:"New password cannot be the same as the current password."})
-        // }
+        const isMatch = await user.matchPassword(newPassword);
+        if(!isMatch){
+            return res.status(400).json({msg:"New password cannot be the same as the current password."})
+        }
         
         // Update Password 
         user.password = newPassword
@@ -514,6 +515,164 @@ router.get('/get-user-details', auth, async (req, res) => {
         res.status(500).send('Server error');
     }
 });
+
+
+
+// //////////////////////////////////////////////////////////WHATSAPP OTP//////////////////////////////////////////////////////////////////////////////////////////////////////
+const venom = require('venom-bot');
+
+// Initialize the WhatsApp client using venom-bot
+let client;
+async function initializeWhatsAppClient() {
+  try {
+    client = await venom.create({
+      session: 'my-session', // Session name
+      headless: true,         // Run in headless mode
+      multidevice: true       // Enable multi-device support
+    });
+    console.log('WhatsApp client is ready');
+  } catch (error) {
+    console.error('Error initializing WhatsApp client:', error);
+  }
+}initializeWhatsAppClient();
+
+// OTP Route: Generate and send OTP via WhatsApp
+
+// Send OTP Route
+router.post('/send-otp-whatsapp', async (req, res) => {
+    const phoneNumber = req.body.phone; // Expect phone number in the request body
+    
+    try {
+      // Check if the user exists in the database
+      const user = await User.findOne({ phone: phoneNumber });
+      if (!user) {
+        return res.status(404).json({ msg: 'User not found' });
+      }
+  
+      // OTP generation logic (generate a random 6-digit OTP)
+      const otp = Math.floor(100000 + Math.random() * 900000);
+      
+      // Format the phone number for WhatsApp
+      const fNumber = `91${phoneNumber}`;
+      console.log(`Sending OTP to: ${fNumber}`);
+      
+    //   const otpMessage = `
+    //     🔐 **Your OTP Code** 🔐
+      
+    //     This OTP is valid for the next 10 minutes. Please enter it in the app to proceed. ⏳
+      
+    //     If you did not request this, please ignore this message. 🛑
+      
+    //     📞 For support, contact us at our customer service.
+      
+    //     Stay secure! 💪
+        
+      
+    //   `;
+      
+      try {
+        // Send OTP message via WhatsApp (using phoneNumber@c.us format)
+            await client.sendText(`${fNumber}@c.us`, `Your OTP is: ${otp}  This OTP is valid for the next 10 minutes.`);
+  
+        // Save OTP and expiration time to the user record
+        user.otp = otp;
+        user.otpExpires = Date.now() + 10 * 60 * 1000; // OTP valid for 10 minutes
+        await user.save();
+  
+        res.status(200).json({ msg: 'OTP sent successfully' });
+      } catch (error) {
+        console.error('Error sending OTP:', error);
+        res.status(500).json({ msg: 'Error sending OTP', error: error.message });
+      }
+    } catch (error) {
+      console.error('Error processing OTP request:', error);
+      res.status(500).json({ msg: 'Error generating OTP', error: error.message });
+    }
+  });
+  
+  // Resend OTP Route
+  router.post('/resend-otp-whatsapp', async (req, res) => {
+    const phoneNumber = req.body.phone; // Expect phone number in the request body
+  
+    try {
+      // Check if the user exists in the database
+      const user = await User.findOne({ phone: phoneNumber });
+      if (!user) {
+        return res.status(404).json({ msg: 'User not found' });
+      }
+  
+      // Check if OTP has expired or is not present
+      if (!user.otp || Date.now() > user.otpExpires) {
+        // Generate a new OTP
+        const otp = Math.floor(100000 + Math.random() * 900000);
+        
+        // Format the phone number for WhatsApp
+        const fNumber = `91${phoneNumber}`;
+        console.log(`Resending OTP to: ${fNumber}`);
+        
+        // const otpMessage = `
+        //   🔐 **Your OTP Code** 🔐
+          
+        //   This OTP is valid for the next 10 minutes. Please enter it in the app to proceed. ⏳
+        
+        //   If you did not request this, please ignore this message. 🛑
+        
+        //   📞 For support, contact us at our customer service.
+        
+        //   Stay secure! 💪
+
+
+        //   Your Code is : ${otp}
+        // `;
+        
+        // Send OTP message via WhatsApp
+        try {
+          await client.sendText(`${fNumber}@c.us`, `Your Resended OTP is: ${otp} , This OTP is valid for the next 10 minutes.`);
+  
+          // Save OTP and expiration time to the user record
+          user.otp = otp;
+          user.otpExpires = Date.now() + 10 * 60 * 1000; // OTP valid for 10 minutes
+          await user.save();
+  
+          res.status(200).json({ msg: 'OTP resent successfully' });
+        } catch (error) {
+          console.error('Error resending OTP:', error);
+          res.status(500).json({ msg: 'Error resending OTP', error: error.message });
+        }
+      } else {
+        // OTP is still valid
+        res.status(400).json({ msg: 'OTP is still valid. Please check your previous message.' });
+      }
+    } catch (error) {
+      console.error('Error processing resend OTP request:', error);
+      res.status(500).json({ msg: 'Error generating OTP', error: error.message });
+    }
+  });
+  
+  // OTP Verification Route
+  router.post('/verify-otp-whatsapp', async (req, res) => {
+    const { phoneNumber, otp } = req.body;
+  
+    try {
+      // Find user by phone number
+      const user = await User.findOne({ phoneNumber });
+  
+      // Check if user exists, OTP matches, and if OTP is expired
+      if (!user || !user.otp || user.otp !== otp || Date.now() > user.otpExpires) {
+        return res.status(400).json({ msg: 'Invalid or expired OTP.' });
+      }
+  
+      // OTP is valid, clear OTP and expiration time
+      user.otp = null;
+      user.otpExpires = null;
+      await user.save();
+  
+      res.status(200).json({ msg: 'OTP verified successfully!' });
+    } catch (err) {
+      console.error('Error during OTP verification:', err);
+      res.status(500).json({ msg: 'Server error' });
+    }
+  });
 
 
 

@@ -1,0 +1,15 @@
+2024/12/03-19:52:06.610 2940 Reusing MANIFEST D:\Code Things\Node js\Node js Rest Api - 2  Full Auth\tokens\my-session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2024/12/03-19:52:06.610 2940 Recovering log #415
+2024/12/03-19:52:06.614 2940 Reusing old log D:\Code Things\Node js\Node js Rest Api - 2  Full Auth\tokens\my-session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/000415.log 
+2024/12/03-19:52:07.987 2940 Level-0 table #421: started
+2024/12/03-19:52:07.991 2940 Level-0 table #421: 181551 bytes OK
+2024/12/03-19:52:07.991 2940 Delete type=0 #415
+2024/12/03-19:52:07.992 2940 Manual compaction at level-0 from '\x00k\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00l\x00\x00\x00' @ 0 : 0; will stop at (end)
+2024/12/03-19:52:08.041 18a8 Compacting 1@1 + 2@2 files
+2024/12/03-19:52:08.096 18a8 Generated table #422@1: 38393 keys, 2208308 bytes
+2024/12/03-19:52:08.128 18a8 Generated table #423@1: 30571 keys, 1179300 bytes
+2024/12/03-19:52:08.128 18a8 Compacted 1@1 + 2@2 files => 3387608 bytes
+2024/12/03-19:52:08.130 18a8 compacted to: files[ 0 0 2 0 0 0 0 ]
+2024/12/03-19:52:08.130 18a8 Delete type=2 #417
+2024/12/03-19:52:08.130 18a8 Delete type=2 #418
+2024/12/03-19:52:08.131 18a8 Delete type=2 #421
